@@ -93,12 +93,12 @@ CONTACT_UI_EXAMPLES = """
       { "id": "call_text_column", "component": { "Column": { "children": { "explicitList": ["call_primary_text", "call_secondary_text"]} , "distribution": "start", "alignment": "start"} } } ,
       { "id": "info_row_4", "component": { "Row": { "children": { "explicitList": ["call_icon", "call_text_column"]} , "distribution": "start", "alignment": "start"} } } ,
       { "id": "info_rows_column", "weight": 1, "component": { "Column": { "children": { "explicitList": ["info_row_1", "info_row_2", "info_row_3", "info_row_4"]} , "alignment": "stretch"} } } ,
-      { "id": "button_1_text", "component": { "Text": { "text": { "literalString": "Follow"} } } } , { "id": "button_1", "component": { "Button": { "child": "button_1_text", "action": { "name": "follow_profile"} } } } ,
-      { "id": "button_2_text", "component": { "Text": { "text": { "literalString": "Message"} } } } , { "id": "button_2", "component": { "Button": { "child": "button_2_text", "action": { "name": "send_message"} } } } ,
+      { "id": "button_1_text", "component": { "Text": { "text": { "literalString": "Follow"} } } } ,
+      { "id": "button_1", "component": { "Button": { "child": "button_1_text", "action": { "name": "follow_contact", "context": [ { "key": "contactName", "value": { "path": "name" } }, { "key": "contactId", "value": { "path": "id" } } ] } } } } ,
+      { "id": "button_2_text", "component": { "Text": { "text": { "literalString": "Message"} } } } ,
+      { "id": "button_2", "component": { "Button": { "child": "button_2_text", "action": { "name": "send_message", "context": [ { "key": "contactName", "value": { "path": "name" } }, { "key": "mobile", "value": { "path": "mobile" } } ] } } } } ,
       { "id": "action_buttons_row", "component": { "Row": { "children": { "explicitList": ["button_1", "button_2"]} , "distribution": "center", "alignment": "center"} } } ,
-      { "id": "link_text", "component": { "Text": { "text": { "literalString": "[View Full Profile](/profile)"} } } } ,
-      { "id": "link_text_wrapper", "component": { "Row": { "children": { "explicitList": ["link_text"]} , "distribution": "center", "alignment": "center"} } } ,
-      { "id": "main_column", "component": { "Column": { "children": { "explicitList": ["profile_image", "description_column", "div", "info_rows_column", "action_buttons_row", "link_text_wrapper"]} , "alignment": "stretch"} } } ,
+      { "id": "main_column", "component": { "Column": { "children": { "explicitList": ["profile_image", "description_column", "div", "info_rows_column", "action_buttons_row"]} , "alignment": "stretch"} } } ,
       { "id": "main_card", "component": { "Card": { "child": "main_column"} } }
     ]
   } },
@@ -106,10 +106,11 @@ CONTACT_UI_EXAMPLES = """
     "surfaceId": "contact-card",
     "path": "/",
     "contents": [
+      { "key": "id", "valueString": "" },
       { "key": "name", "valueString": "" },
       { "key": "title", "valueString": "" },
       { "key": "team", "valueString": "" },
-      { "key": "location", "valueString": "" },
+      { "key":"location", "valueString": "" },
       { "key": "email", "valueString": "" },
       { "key": "mobile", "valueString": "" },
       { "key": "calendar", "valueString": "" },
@@ -121,21 +122,20 @@ CONTACT_UI_EXAMPLES = """
 
 ---BEGIN ACTION_CONFIRMATION_EXAMPLE---
 [
-  { "beginRendering": { "surfaceId": "action-modal", "root": "modal-wrapper", "styles": { "primaryColor": "#007BFF", "font": "Roboto" } } },
+  { "beginRendering": { "surfaceId": "action-confirmation", "root": "confirmation-card", "styles": { "primaryColor": "#007BFF", "font": "Roboto" } } },
   { "surfaceUpdate": {
-    "surfaceId": "action-modal",
+    "surfaceId": "action-confirmation",
     "components": [
-      { "id": "modal-wrapper", "component": { "Modal": { "entryPointChild": "hidden-entry-point", "contentChild": "modal-content-column" } } },
-      { "id": "hidden-entry-point", "component": { "Text": { "text": { "literalString": "" } } } },
-      { "id": "modal-content-column", "component": { "Column": { "children": { "explicitList": ["modal-title", "modal-message", "dismiss-button"] }, "alignment": "center" } } },
-      { "id": "modal-title", "component": { "Heading": { "level": "2", "text": { "path": "actionTitle" } } } },
-      { "id": "modal-message", "component": { "Text": { "text": { "path": "actionMessage" } } } },
+      { "id": "confirmation-card", "component": { "Card": { "child": "confirmation-column" } } },
+      { "id": "confirmation-column", "component": { "Column": { "children": { "explicitList": ["confirmation-title", "confirmation-message", "dismiss-button"] }, "alignment": "center" } } },
+      { "id": "confirmation-title", "component": { "Heading": { "level": "2", "text": { "path": "actionTitle" } } } },
+      { "id": "confirmation-message", "component": { "Text": { "text": { "path": "actionMessage" } } } },
       { "id": "dismiss-button-text", "component": { "Text": { "text": { "literalString": "Dismiss" } } } },
       { "id": "dismiss-button", "component": { "Button": { "child": "dismiss-button-text", "action": { "name": "dismiss_modal" } } } }
     ]
   } },
   { "dataModelUpdate": {
-    "surfaceId": "action-modal",
+    "surfaceId": "action-confirmation",
     "path": "/",
     "contents": [
       { "key": "actionTitle", "valueString": "Action Confirmation" },

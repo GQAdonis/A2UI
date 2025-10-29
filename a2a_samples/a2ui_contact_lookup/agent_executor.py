@@ -90,6 +90,35 @@ class ContactAgentExecutor(AgentExecutor):
             action = ui_event_part.get("actionName")
             ctx = ui_event_part.get("context", {})
 
+            # Handle dismiss_modal directly without calling the LLM
+            if action == "dismiss_modal":
+                logger.info("--- AGENT_EXECUTOR: Handling dismiss_modal directly. ---")
+                task = context.current_task
+                if not task:
+                    task = new_task(context.message)
+                    await event_queue.enqueue_event(task)
+                updater = TaskUpdater(event_queue, task.id, task.context_id)
+
+                # 1. Create the text part
+                text_part = Part(root=TextPart(text="OK. How else can I help?"))
+
+                # 2. Create the deleteSurface part
+                delete_part = Part(
+                    root=DataPart(
+                        data={"deleteSurface": {"surfaceId": "action-confirmation"}},
+                        mime_type=a2ui_MIME_TYPE,
+                    )
+                )
+
+                # 3. Send the response and exit
+                await updater.update_status(
+                    TaskState.input_required,
+                    new_agent_parts_message(
+                        [text_part, delete_part], task.context_id, task.id
+                    ),
+                )
+                return
+
             if action == "view_profile":
                 contact_name = ctx.get("contactName", "Unknown")
                 department = ctx.get("department", "")
@@ -99,14 +128,16 @@ class ContactAgentExecutor(AgentExecutor):
                 contact_name = ctx.get("contactName", "Unknown")
                 email = ctx.get("email", "Unknown")
                 query = f"USER_WANTS_TO_EMAIL: {contact_name} at {email}"
-            
+
             elif action == "send_message":
                 contact_name = ctx.get("contactName", "Unknown")
-                query = f"USER_WANTS_TO_MESSAGE: {contact_name}"
+                mobile = ctx.get("mobile", "Unknown")
+                query = f"USER_WANTS_TO_MESSAGE: {contact_name} at {mobile}"
 
-            elif action == "view_full_profile":
+            elif action == "follow_contact":
                 contact_name = ctx.get("contactName", "Unknown")
-                query = f"USER_WANTS_FULL_PROFILE: {contact_name}"
+                contact_id = ctx.get("contactId", "Unknown")
+                query = f"USER_WANTS_TO_FOLLOW: {contact_name} (ID: {contact_id})"
 
             else:
                 query = f"User submitted an event: {action} with data: {ctx}"
@@ -132,9 +163,9 @@ class ContactAgentExecutor(AgentExecutor):
                 )
                 continue
 
-            final_state = TaskState.input_required # Default
-            if action in ["send_email", "send_message", "view_full_profile"]:
-                 final_state = TaskState.completed
+            final_state = TaskState.input_required  # Default
+            if action in ["send_email", "send_message", "follow_contact"]:
+                final_state = TaskState.completed
 
             content = item["content"]
             final_parts = []
@@ -150,10 +181,12 @@ class ContactAgentExecutor(AgentExecutor):
                         json_string_cleaned = (
                             json_string.strip().lstrip("```json").rstrip("```").strip()
                         )
-                        
+
                         # Handle empty JSON list (e.g., no results)
                         if not json_string_cleaned or json_string_cleaned == "[]":
-                            logger.info("Received empty/no JSON part. Skipping DataPart.")
+                            logger.info(
+                                "Received empty/no JSON part. Skipping DataPart."
+                            )
                         else:
                             json_data = json.loads(json_string_cleaned)
                             if isinstance(json_data, list):
@@ -190,9 +223,10 @@ class ContactAgentExecutor(AgentExecutor):
                 final_parts.append(Part(root=TextPart(text=content.strip())))
 
             # If after all that, we only have empty parts, add a default text response
-            if not final_parts or all(isinstance(p.root, TextPart) and not p.root.text for p in final_parts):
-                 final_parts = [Part(root=TextPart(text="OK."))]
-
+            if not final_parts or all(
+                isinstance(p.root, TextPart) and not p.root.text for p in final_parts
+            ):
+                final_parts = [Part(root=TextPart(text="OK."))]
 
             logger.info("--- FINAL PARTS TO BE SENT ---")
             for i, part in enumerate(final_parts):

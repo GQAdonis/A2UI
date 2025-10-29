@@ -75,9 +75,13 @@ def get_ui_prompt(base_url: str, examples: str) -> str:
         a.  You MUST call the `get_contact_info` tool with the specific name.
         b.  This will return a single contact. You MUST use the `CONTACT_CARD_EXAMPLE` template.
 
-    -   **For handling actions (e.g., "USER_WANTS_TO_EMAIL: ..."):**
+    -   **For handling actions (e.g., "USER_WANTS_TO_EMAIL: ...", "USER_WANTS_TO_MESSAGE: ...", "USER_WANTS_TO_FOLLOW: ..."):**
         a.  You MUST use the `ACTION_CONFIRMATION_EXAMPLE` template.
-        b.  Populate the `dataModelUpdate.contents` with a confirmation title and message (e.g., title: "Email Drafted", message: "Drafting an email to Alex Jordan...").
+        b.  Populate the `dataModelUpdate.contents` with a confirmation title and message based on the action.
+        c.  **Examples:**
+            i.   For "USER_WANTS_TO_EMAIL: [Name] at [Email]": title: "Email Drafted", message: "Drafting an email to [Name]..."
+            ii.  For "USER_WANTS_TO_MESSAGE: [Name] at [Mobile]": title: "Message Ready", message: "Opening a message to [Name]..."
+            iii. For "USER_WANTS_TO_FOLLOW: [Name] (ID: [ID])": title: "Followed", message: "You are now following [Name]."
 
     {formatted_examples}
 
