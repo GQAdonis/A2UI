@@ -5,43 +5,7 @@ import * as v0_8 from '@a2ui/web-lib/0.8';
 @Component({
   selector: 'app-library',
   imports: [Surface],
-  template: `
-    <section class="block-gallery">
-      @for (block of blocks; track block.name) {
-        <article class="block-card" (click)="openDialog(block)">
-          <section class="block-header">
-            <p class="block-title">{{ block.name }}</p>
-            <button class="block-view-code">...</button>
-          </section>
-          <a2ui-surface [surfaceId]="'lib-' + block.name" [surface]="block.surface" />
-        </article>
-      }
-    </section>
-
-    <dialog #dialog>
-      <article>
-        @if (selectedBlock) {
-          <section class="block-header">
-            <p class="block-title">{{ selectedBlock.name }}</p>
-            <button (click)="closeDialog()">Close</button>
-          </section>
-          <div class="dialog-content-grid">
-            <section class="block-surface">
-              <a2ui-surface
-                [surfaceId]="'dialog-' + selectedBlock.name"
-                [surface]="selectedBlock.surface"
-              />
-            </section>
-            <section class="block-json">
-              JSON Implementation
-            </section>
-          </div>
-        } @else {
-          <h3>Please select a component from the screen</h3>
-        }
-      </article>
-    </dialog>
-  `,
+  templateUrl: './library.html',
   styleUrl: './library.css',
 })
 export class LibraryComponent {
