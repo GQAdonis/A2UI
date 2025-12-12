@@ -1,48 +1,26 @@
-<style>
-  .home-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-  }
+<!--
+ Copyright 2025 Google LLC
 
-  .app-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 16px; /* Space between items */
-  }
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-  .app-nav li {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-  }
+      https://www.apache.org/licenses/LICENSE-2.0
 
-  .app-nav li:hover {
-    background-color: #eee;
-  }
-  .hero-message {
-    font-weight: bold;
-    text-align: center;
-  }
-  .hero-message h1 {
-    font-size: 3rem;
-  }
-  .hero-message p {
-    font-size: 1.5rem;
-    font-weight: lighter;
-  }
-</style>
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
 <header class="home-page-header">
   <p>A2UI Gallery</p>
   <nav class="app-nav">
     <ul>
-      <li>Library</li>
-      <li>Gallery</li>
-      <li>GitHub</li>
+      <li><a (click)="setView('library')">Library</a></li>
+      <li><a (click)="setView('gallery')">Gallery</a></li>
+      <li><a href="https://github.com/google/A2UI">GitHub</a></li>
     </ul>
   </nav>
 </header>
@@ -52,27 +30,10 @@
     <p>Building blocks and examples for Agent Driven UIs</p>
   </div>
   <section>
-    <app-library />
+    @if(currentView() === 'gallery') {
+      <app-gallery />
+    } @else {
+      <app-library />
+    }
   </section>
 </section>
-
-<!--
-<div class="app-container">
-  <div class="main-sidebar">
-    <h1 class="app-title">A2UI Gallery</h1>
-    <div class="nav-buttons">
-      <div class="nav-btn" [class.active]="currentView === 'library'" (click)="setView('library')">
-        <span>📚</span> Library
-      </div>
-      <div class="nav-btn" [class.active]="currentView === 'gallery'" (click)="setView('gallery')">
-        <span>🎨</span> Gallery
-      </div>
-    </div>
-  </div>
-  
-  <div class="content-area">
-    <app-library *ngIf="currentView === 'library'"></app-library>
-    <app-gallery *ngIf="currentView === 'gallery'"></app-gallery>
-  </div>
-</div>
--->
