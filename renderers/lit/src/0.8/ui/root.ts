@@ -28,12 +28,12 @@ import {
 import { customElement, property } from "lit/decorators.js";
 import { map } from "lit/directives/map.js";
 import { effect } from "signal-utils/subtle/microtask-effect";
-import { A2UIModelProcessor } from "../data/model-processor.js";
+import { A2uiMessageProcessor } from "../data/model-processor.js";
 import { StringValue } from "../types/primitives.js";
 import { Theme, AnyComponentNode, SurfaceID } from "../types/types.js";
 import { themeContext } from "./context/theme.js";
 import { structuralStyles } from "./styles.js";
-import { ComponentRegistry, REGISTRY } from './component-registry.js';
+import { componentRegistry } from "./component-registry.js";
 
 type NodeOfType<T extends AnyComponentNode["type"]> = Extract<
   AnyComponentNode,
@@ -56,7 +56,7 @@ export class Root extends SignalWatcher(LitElement) {
   accessor childComponents: AnyComponentNode[] | null = null;
 
   @property({ attribute: false })
-  accessor processor: A2UIModelProcessor | null = null;
+  accessor processor: A2uiMessageProcessor | null = null;
 
   @property()
   accessor dataContextPath: string = "";
@@ -81,6 +81,7 @@ export class Root extends SignalWatcher(LitElement) {
     css`
       :host {
         display: flex;
+        flex-direction: column;
         gap: 8px;
         max-height: 80%;
       }
@@ -141,7 +142,7 @@ export class Root extends SignalWatcher(LitElement) {
     return html` ${map(components, (component) => {
       // 1. Check if there is a registered custom component or override.
       if (this.enableCustomElements) {
-        const registeredCtor = REGISTRY.get(component.type);
+        const registeredCtor = componentRegistry.get(component.type);
         // We also check customElements.get for non-registered but defined elements
         const elCtor = registeredCtor || customElements.get(component.type);
 
@@ -251,6 +252,7 @@ export class Root extends SignalWatcher(LitElement) {
             .url=${node.properties.url ?? null}
             .dataContextPath=${node.dataContextPath ?? ""}
             .usageHint=${node.properties.usageHint}
+            .fit=${node.properties.fit}
             .enableCustomElements=${this.enableCustomElements}
           ></a2ui-image>`;
         }
@@ -499,7 +501,7 @@ export class Root extends SignalWatcher(LitElement) {
     }
 
     const node = component as AnyComponentNode;
-    const registeredCtor = REGISTRY.get(component.type);
+    const registeredCtor = componentRegistry.get(component.type);
     const elCtor = registeredCtor || customElements.get(component.type);
 
     if (!elCtor) {

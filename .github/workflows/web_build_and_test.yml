@@ -1,13 +1,29 @@
-name: Web (Lit) build and test
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Lit renderer build and test
 
 on:
   push:
     branches: [ main ]
-    paths-ignore:
-      - 'a2a_agents/python/adk/samples/**'
+    paths:
+      - 'renderers/lit/**'
+      - '.github/workflows/web_build_and_test.yml'
   pull_request:
-    paths-ignore:
-      - 'a2a_agents/python/adk/samples/**'
+    paths:
+      - 'renderers/lit/**'
+      - '.github/workflows/web_build_and_test.yml'
 
 jobs:
   build-and-test:
@@ -25,14 +41,10 @@ jobs:
         working-directory: ./renderers/lit
         run: npm i
 
-      - name: Install all workspaces' dependencies
-        working-directory: ./web
-        run: npm i
+      - name: Build Lit renderer
+        working-directory: ./renderers/lit
+        run: npm run build
 
-      - name: Build all workspaces
-        working-directory: ./web
-        run: npm run build --workspaces
-
-      - name: Run all tests
-        working-directory: ./web
-        run: npm run test --workspace=@a2ui/web-lib
+      - name: Run Lit renderer tests
+        working-directory: ./renderers/lit
+        run: npm test

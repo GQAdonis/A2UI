@@ -19,7 +19,7 @@ import { customElement, property } from "lit/decorators.js";
 import { Root } from "./root.js";
 import { StringValue } from "../types/primitives.js";
 import { classMap } from "lit/directives/class-map.js";
-import { A2UIModelProcessor } from "../data/model-processor.js";
+import { A2uiMessageProcessor } from "../data/model-processor.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { structuralStyles } from "./styles.js";
 import { ResolvedImage } from "../types/types.js";
@@ -32,6 +32,9 @@ export class Image extends Root {
 
   @property()
   accessor usageHint: ResolvedImage["usageHint"] | null = null;
+
+  @property()
+  accessor fit: "contain" | "cover" | "fill" | "none" | "scale-down" | null = null;
 
   static styles = [
     structuralStyles,
@@ -51,6 +54,7 @@ export class Image extends Root {
         display: block;
         width: 100%;
         height: 100%;
+        object-fit: var(--object-fit, fill);
       }
     `,
   ];
@@ -79,7 +83,7 @@ export class Image extends Root {
         const imageUrl = this.processor.getData(
           this.component,
           this.url.path,
-          this.surfaceId ?? A2UIModelProcessor.DEFAULT_SURFACE_ID
+          this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID
         );
         if (!imageUrl) {
           return html`Invalid image URL`;
@@ -103,9 +107,10 @@ export class Image extends Root {
 
     return html`<section
       class=${classMap(classes)}
-      style=${this.theme.additionalStyles?.Image
-        ? styleMap(this.theme.additionalStyles?.Image)
-        : nothing}
+      style=${styleMap({
+        ...(this.theme.additionalStyles?.Image ?? {}),
+        "--object-fit": this.fit ?? "fill",
+      })}
     >
       ${this.#renderImage()}
     </section>`;

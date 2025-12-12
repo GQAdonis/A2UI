@@ -17,7 +17,7 @@
 import { html, css, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { SurfaceID, Surface as SurfaceState } from "../types/types";
-import { A2UIModelProcessor } from "../data/model-processor.js";
+import { A2uiMessageProcessor } from "../data/model-processor.js";
 import { Root } from "./root.js";
 import { styleMap } from "lit/directives/style-map.js";
 
@@ -30,14 +30,13 @@ export class Surface extends Root {
   accessor surface: SurfaceState | null = null;
 
   @property()
-  accessor processor: A2UIModelProcessor | null = null;
+  accessor processor: A2uiMessageProcessor | null = null;
 
   static styles = [
     css`
       :host {
         display: flex;
         min-height: 0;
-        overflow: auto;
         max-height: 100%;
         flex-direction: column;
         gap: 16px;
@@ -75,17 +74,25 @@ export class Surface extends Root {
       for (const [key, value] of Object.entries(this.surface.styles)) {
         switch (key) {
           case "primaryColor": {
-            for (let i = 0; i <= 100; i++) {
-              styles[`--p-${i}`] = `color-mix(in srgb, ${value} ${
-                100 - i
-              }%, #fff ${i}%)`;
-            }
+            // Ignored for now. This is due to the fact that the sample agents
+            // produce values for these and if they are used here then they will
+            // override the values at the app level.
+            //
+            // for (let i = 0; i <= 100; i++) {
+            //   styles[`--p-${i}`] = `color-mix(in srgb, ${value} ${
+            //     100 - i
+            //   }%, #fff ${i}%)`;
+            // }
             break;
           }
 
           case "font": {
-            styles["--font-family"] = value;
-            styles["--font-family-flex"] = value;
+            // Ignored for now. This is due to the fact that the sample agents
+            // produce values for these and if they are used here then they will
+            // override the values at the app level.
+            //
+            // styles["--font-family"] = value;
+            // styles["--font-family-flex"] = value;
             break;
           }
         }

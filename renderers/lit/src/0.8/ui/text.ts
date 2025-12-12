@@ -20,18 +20,28 @@ import { markdown } from "./directives/directives.js";
 import { Root } from "./root.js";
 import { StringValue } from "../types/primitives.js";
 import { classMap } from "lit/directives/class-map.js";
-import { A2UIModelProcessor } from "../data/model-processor.js";
+import { A2uiMessageProcessor } from "../data/model-processor.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { structuralStyles } from "./styles.js";
 import { Styles } from "../index.js";
-import { ResolvedText } from "../types/types.js";
+import { ResolvedText, Theme } from "../types/types.js";
+
+interface HintedStyles {
+  h1: Record<string, string>;
+  h2: Record<string, string>;
+  h3: Record<string, string>;
+  h4: Record<string, string>;
+  h5: Record<string, string>;
+  body: Record<string, string>;
+  caption: Record<string, string>;
+}
 
 @customElement("a2ui-text")
 export class Text extends Root {
   @property()
   accessor text: StringValue | null = null;
 
-  @property()
+  @property({ reflect: true, attribute: "usage-hint" })
   accessor usageHint: ResolvedText["usageHint"] | null = null;
 
   static styles = [
@@ -41,68 +51,99 @@ export class Text extends Root {
         display: block;
         flex: var(--weight);
       }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5 {
+        line-height: inherit;
+        font: inherit;
+      }
     `,
   ];
 
   #renderText() {
+    let textValue: string | null | undefined = null;
+
     if (this.text && typeof this.text === "object") {
       if ("literalString" in this.text && this.text.literalString) {
-        return html`${markdown(
-          this.text.literalString,
-          Styles.appendToAll(this.theme.markdown, ["ol", "ul", "li"], {})
-        )}`;
+        textValue = this.text.literalString;
       } else if ("literal" in this.text && this.text.literal !== undefined) {
-        return html`${markdown(
-          this.text.literal,
-          Styles.appendToAll(this.theme.markdown, ["ol", "ul", "li"], {})
-        )}`;
+        textValue = this.text.literal;
       } else if (this.text && "path" in this.text && this.text.path) {
         if (!this.processor || !this.component) {
           return html`(no model)`;
         }
 
-        const textValue = this.processor.getData(
+        const value = this.processor.getData(
           this.component,
           this.text.path,
-          this.surfaceId ?? A2UIModelProcessor.DEFAULT_SURFACE_ID
+          this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID
         );
 
-        if (textValue === null || textValue === undefined) {
-          return html`(empty)`;
+        if (value !== null && value !== undefined) {
+          textValue = value.toString();
         }
-
-        let markdownText = textValue.toString();
-        switch (this.usageHint) {
-          case "h1":
-            markdownText = `# ${markdownText}`;
-            break;
-          case "h2":
-            markdownText = `## ${markdownText}`;
-            break;
-          case "h3":
-            markdownText = `### ${markdownText}`;
-            break;
-          case "h4":
-            markdownText = `#### ${markdownText}`;
-            break;
-          case "h5":
-            markdownText = `##### ${markdownText}`;
-            break;
-          case "caption":
-            markdownText = `*${markdownText}*`;
-            break;
-          default:
-            break; // Body.
-        }
-
-        return html`${markdown(
-          markdownText,
-          Styles.appendToAll(this.theme.markdown, ["ol", "ul", "li"], {})
-        )}`;
       }
     }
 
-    return html`(empty)`;
+    if (textValue === null || textValue === undefined) {
+      return html`(empty)`;
+    }
+
+    let markdownText = textValue;
+    switch (this.usageHint) {
+      case "h1":
+        markdownText = `# ${markdownText}`;
+        break;
+      case "h2":
+        markdownText = `## ${markdownText}`;
+        break;
+      case "h3":
+        markdownText = `### ${markdownText}`;
+        break;
+      case "h4":
+        markdownText = `#### ${markdownText}`;
+        break;
+      case "h5":
+        markdownText = `##### ${markdownText}`;
+        break;
+      case "caption":
+        markdownText = `*${markdownText}*`;
+        break;
+      default:
+        break; // Body.
+    }
+
+    return html`${markdown(
+      markdownText,
+      Styles.appendToAll(this.theme.markdown, ["ol", "ul", "li"], {})
+    )}`;
+  }
+
+  #areHintedStyles(styles: unknown): styles is HintedStyles {
+    if (typeof styles !== "object") return false;
+    if (Array.isArray(styles)) return false;
+    if (!styles) return false;
+
+    const expected = ["h1", "h2", "h3", "h4", "h5", "h6", "caption", "body"];
+    return expected.every((v) => v in styles);
+  }
+
+  #getAdditionalStyles() {
+    let additionalStyles: Record<string, string> = {};
+    const styles = this.theme.additionalStyles?.Text;
+    if (!styles) return additionalStyles;
+
+    if (this.#areHintedStyles(styles)) {
+      const hint = this.usageHint ?? "body";
+      additionalStyles = styles[hint] as Record<string, string>;
+    } else {
+      additionalStyles = styles;
+    }
+
+    return additionalStyles;
   }
 
   render() {
@@ -114,7 +155,7 @@ export class Text extends Root {
     return html`<section
       class=${classMap(classes)}
       style=${this.theme.additionalStyles?.Text
-        ? styleMap(this.theme.additionalStyles?.Text)
+        ? styleMap(this.#getAdditionalStyles())
         : nothing}
     >
       ${this.#renderText()}
