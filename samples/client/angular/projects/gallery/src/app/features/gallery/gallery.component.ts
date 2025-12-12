@@ -14,7 +14,7 @@
  limitations under the License.
  */
 
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Surface } from '@a2ui/angular';
 import * as v0_8 from '@a2ui/web-lib/0.8';
@@ -33,6 +33,8 @@ interface GallerySample {
   styleUrl: './gallery.css',
 })
 export class GalleryComponent {
+  @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
+  selectedSample: GallerySample | null = null;
   activeSection = 'welcome';
   showJsonId: string | null = null;
 
@@ -161,6 +163,15 @@ export class GalleryComponent {
       }),
     },
   ];
+
+  openDialog(sample: GallerySample) {
+    this.selectedSample = sample;
+    this.dialog.nativeElement.showModal();
+  }
+
+  closeDialog() {
+    this.dialog.nativeElement.close();
+  }
 
   scrollTo(id: string) {
     this.activeSection = id;
